@@ -22,4 +22,11 @@ export class UserService {
   getUsers(): Observable<User[]> {
     return this.http.get<User[]>(this.apiUrl);
   }
+
+  // POST /api/users/{id}/photo   (multipart form, field name "file")
+  uploadPhoto(userId: number, file: File): Observable<User> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<User>(`${this.apiUrl}/${userId}/photo`, formData);
+  }
 }
