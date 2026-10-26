@@ -1,0 +1,31 @@
+# ---------------------------------------------------------------
+# nginx inside the frontend container (Day 4)
+#   /       -> the built Angular files
+#   /api/*  -> forwarded to the backend (${BACKEND_URL})
+# This file is a template: at container start nginx fills in
+# ${BACKEND_URL} and ${NGINX_LOCAL_RESOLVERS} (the DNS server).
+# ---------------------------------------------------------------
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Photos up to 5 MB are uploaded through here
+    client_max_body_size 6m;
+
+    # Look the backend up by name at request time (not only at startup),
+    # so nginx starts even if the backend is not deployed yet
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;
+
+    location /api/ {
+        set $backend ${BACKEND_URL};
+        proxy_pass $backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # Angular routes (/register, /users) all load index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
